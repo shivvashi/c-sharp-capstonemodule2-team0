@@ -1,92 +1,228 @@
-# Mini Capstone Module 2 Base
+# Module 2 Capstone - TEnmo
 
+Congratulations—you've landed a job with TEnmo, whose product is an online payment service for transferring "TE bucks" between friends. However, they don't have a product yet. You've been tasked with writing a RESTful API server and command-line application.
 
+## Use cases
 
-## Getting started
+### Required use cases
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+You should attempt to complete all of the following required use cases.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+1. **[COMPLETE]** As a user of the system, I need to be able to register myself with a username and password.
+   1. A new registered user starts with an initial balance of 1,000 TE Bucks.
+   2. The ability to register has been provided in your starter code.
+2. **[MOSTLY COMPLETE]** As a user of the system, I need to be able to log in using my registered username and password.
+   1. Logging in returns an Authentication Token. I need to include this token with all my subsequent interactions with the system outside of registering and logging in.
+   2. The ability to log in has been MOSTLY provided in your starter code.
+3. As an authenticated user of the system, I need to be able to see my Account Balance. -- note from Lori: THIS WILL REQUIRE A NEW DATABASE TABLE and its associated DAO pieces!! Make sure you keep reading all the way to the end to see what kinds of DB tables and DAO layer you need!
+4. As an authenticated user of the system, I need to be able to *send* a transfer of a specific amount of TE Bucks to a registered user.
+   1. I should be able to choose from a list of users to send TE Bucks to.
+   2. I must not be allowed to send money to myself.
+   3. A transfer includes the User IDs of the from and to users and the amount of TE Bucks.
+   4. The receiver's account balance is increased by the amount of the transfer.
+   5. The sender's account balance is decreased by the amount of the transfer.
+   6. I can't send more TE Bucks than I have in my account.
+   7. I can't send a zero or negative amount.
+   8. A Sending Transfer has an initial status of *Approved*.
+5. As an authenticated user of the system, I need to be able to see transfers I have sent or received.
+6. As an authenticated user of the system, I need to be able to retrieve the details of any transfer based upon the transfer ID.
 
-## Add your files
+### Optional use cases
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+If you complete all of the required use cases and are looking for additional challenge, complete as many of the following optional use cases as you can.
 
+7. As an authenticated user of the system, I need to be able to *request* a transfer of a specific amount of TE Bucks from another registered user.
+   1. I should be able to choose from a list of users to request TE Bucks from.
+   2. I must not be allowed to request money from myself.
+   3. I can't request a zero or negative amount.
+   4. A transfer includes the User IDs of the from and to users and the amount of TE Bucks.
+   5. A Request Transfer has an initial status of *Pending*.
+   6. No account balance changes until the request is approved.
+   7. The transfer request should appear in both users' list of transfers (use case #5).
+8. As an authenticated user of the system, I need to be able to see my *Pending* transfers.
+9. As an authenticated user of the system, I need to be able to either approve or reject a Request Transfer.
+   1. I can't "approve" a given Request Transfer for more TE Bucks than I have in my account.
+   2. The Request Transfer status is *Approved* if I approve, or *Rejected* if I reject the request.
+   3. If the transfer is approved, the requester's account balance is increased by the amount of the request.
+   4. If the transfer is approved, the requestee's account balance is decreased by the amount of the request.
+   5. If the transfer is rejected, no account balance changes.
+
+## Sample screens
+
+### Use case 3: Current balance
 ```
-cd existing_repo
-git remote add origin https://git.techelevator.com/campuses/cle/may-2023/c-sharp/student-pairs/mini-capstone-module-2-base.git
-git branch -M main
-git push -uf origin main
+Your current account balance is: $9999.99
 ```
 
-## Integrate with your tools
+### Use case 4: Send TE Bucks
+```
+Please choose an option: 4
+|-------------- Users --------------|
+|    Id | Username                  |
+|-------+---------------------------|
+|  1002 | Bernice                   |
+|  1003 | Deandre                   |
+|-----------------------------------|
+Id of the user you are sending to[0]: 1003
+Enter amount to send: 75.74
+```
 
-- [ ] [Set up project integrations](https://git.techelevator.com/campuses/cle/may-2023/c-sharp/student-pairs/mini-capstone-module-2-base/-/settings/integrations)
+### Use case 5: View transfers
+```
+-------------------------------------------
+Transfers
+ID          From/To                 Amount
+-------------------------------------------
+23          From: Bernice          $ 903.14
+79          To:    Larry           $  12.55
+---------
+Please enter transfer ID to view details (0 to cancel): "
+```
 
-## Collaborate with your team
+### Use case 6: Transfer details
+```
+--------------------------------------------
+Transfer Details
+--------------------------------------------
+ Id: 23
+ From: Bernice
+ To: Me Myselfandi
+ Type: Send
+ Status: Approved
+ Amount: $903.14
+```
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+### Use case 7: Requesting TE Bucks
+```
+Please choose an option: 5
+|-------------- Users --------------|
+|    Id | Username                  |
+|-------+---------------------------|
+|  1002 | Bernice                   |
+|  1003 | Deandre                   |
+|-----------------------------------|
+Id of the user you are requesting from[0]: 1002
+Enter amount to request: 39.99
+```
 
-## Test and Deploy
+### Use case 8: Pending requests
+```
+-------------------------------------------
+Pending Transfers
+ID          To                     Amount
+-------------------------------------------
+88          Bernice                $ 142.56
+147         Larry                  $  10.17
+---------
+Please enter transfer ID to approve/reject (0 to cancel): "
+```
 
-Use the built-in continuous integration in GitLab.
+### Use case 9: Approve or reject pending transfer
+```
+1: Approve
+2: Reject
+0: Don't approve or reject
+---------
+Please choose an option:
+```
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+## Database schema
 
-***
+![Database schema](./img/Tenmo_erd.png)
 
-# Editing this README
+### `tenmo_user` table
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+---
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+Stores the login information for users of the system.
 
-## Name
-Choose a self-explaining name for your project.
+| Field           | Description                                                                    |
+| --------------- | ------------------------------------------------------------------------------ |
+| `user_id`       | Unique identifier of the user                                                  |
+| `username`      | String that identifies the name of the user; used as part of the login process |
+| `password_hash` | Hashed version of the user's password                                          |
+| `salt`          | String that helps hash the password                                            |
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### `account` table
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+---
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+Stores the accounts of users in the system.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+| Field           | Description                                                        |
+| --------------- | ------------------------------------------------------------------ |
+| `account_id`    | Unique identifier of the account                                   |
+| `user_id`       | Foreign key to the `users` table; identifies user who owns account |
+| `balance`       | The amount of TE bucks currently in the account                    |
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### `transfer_type` table
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+---
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Stores the types of transfers that are possible.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+| Field                | Description                             |
+| -------------------- | --------------------------------------- |
+| `transfer_type_id`   | Unique identifier of the transfer type  |
+| `transfer_type_desc` | String description of the transfer type |
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+There are two types of transfers:
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+| `transfer_type_id` | `transfer_type_desc` | Purpose                                                                |
+| ------------------ | -------------------- | ---------------------------------------------------------------------- |
+| 1                  | Request              | Identifies transfer where a user requests money from another user      |
+| 2                  | Send                 | Identifies transfer where a user sends money to another user           |
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+### `transfer_status` table
 
-## License
-For open source projects, say how it is licensed.
+---
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Stores the statuses of transfers that are possible.
+
+| Field                  | Description                               |
+| ---------------------- | ----------------------------------------- |
+| `transfer_status_id`   | Unique identifier of the transfer status  |
+| `transfer_status_desc` | String description of the transfer status |
+
+There are three statuses of transfers:
+
+| `transfer_status_id` | `transfer_status_desc` |Purpose                                                                                 |
+| -------------------- | -------------------- | ---------------------------------------------------------------------------------------  |
+| 1                    | Pending                | Identifies transfer that hasn't occurred yet and requires approval from the other user |
+| 2                    | Approved               | Identifies transfer that has been approved and occurred                                |
+| 3                    | Rejected               | Identifies transfer that wasn't approved                                               |
+
+### `transfer` table
+
+---
+
+Stores the transfers of TE bucks.
+
+| Field                | Description                                                                                     |
+| -------------------- | ----------------------------------------------------------------------------------------------- |
+| `transfer_id`        | Unique identifier of the transfer                                                               |
+| `transfer_type_id`   | Foreign key to the `transfer_types` table; identifies type of transfer                          |
+| `transfer_status_id` | Foreign key to the `transfer_statuses` table; identifies status of transfer                     |
+| `account_from`       | Foreign key to the `accounts` table; identifies the account that the funds are being taken from |
+| `account_to`         | Foreign key to the `accounts` table; identifies the account that the funds are going to         |
+| `amount`             | Amount of the transfer                                                                          |
+
+> Note: there are two check constraints in the DDL that creates the `transfer` table. Be sure to take a look at `tenmo.sql` to understand these constraints.
+
+## How to set up the database
+
+In the database folder, you'll find the database creation script `tenmo.sql`. Open this in SQL Server Management Studio and execute it.
+
+## Authentication
+
+The user registration and authentication functionality for the system has already been implemented. If you review the login code in `TenmoApp.cs`, you'll notice that after a successful authentication, the user is stored in `AuthenticatedApiService`, which is a base class for any API service that needs authentication. `TenmoApiService` derives from `AuthenticatedApiService`. At the same time the user is stored, the token is also stored in the `IRestClient` in that class.
+
+`AuthenticatedApiService` also has three handy properties you may need in your client program:
+* `IsLoggedIn` is a boolean telling whether the user has been authenticated.
+* `UserId` is an integer which holds the user's id (when `IsLoggedIn == true`).
+* `Username` is a string which holds the user's name (when `IsLoggedIn == true`).
+
+
+## Set startup projects
+
+Since both the client and server applications are included in the solution, you'll have to configure the solution to run both projects simultaneously. In Visual Studio, right-click the solution and select **Set Startup Projects...**. In the window that appears, select **Multiple startup projects** and set both "TenmoClient" and "TenmoServer" to have the action `Start`.
