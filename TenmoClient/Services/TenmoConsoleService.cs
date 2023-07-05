@@ -55,7 +55,11 @@ namespace TenmoClient.Services
         // Add application-specific UI methods here...
         public void DisplayBalance(decimal balance)
         {
-            Console.WriteLine($"Your current account balance is: ${balance}");
+            Console.Write($"Your current account balance is: ");
+            ConsoleColor color = balance > 0 ? ConsoleColor.Green : ConsoleColor.Red;
+            Console.ForegroundColor = color;
+            Console.Write($"$ {balance}");
+            Console.ForegroundColor = ConsoleColor.Gray;
         }
 
     }

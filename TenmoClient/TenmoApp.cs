@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using TenmoClient.Models;
 using TenmoClient.Services;
 
@@ -76,14 +77,28 @@ namespace TenmoClient
                 // View your current balance
                 decimal balance = tenmoApiService.GetAccount(tenmoApiService.UserId).Balance;
                 console.DisplayBalance(balance);
-
-
-                
+                Thread.Sleep(5000);                               
             }
 
             if (menuSelection == 2)
             {
                 // View your past transfers
+                List<Transfer> transfers = tenmoApiService.GetTransfers(tenmoApiService.UserId);
+                Console.WriteLine("-------------------------------------------\r\nTransfers\r\nID          From/To                 Amount\r\n-------------------------------------------");
+                foreach(Transfer item in transfers)
+                {
+                    if(item.TransferTypeId == 1)
+                    {
+                        Console.WriteLine($"{item.TransferId}          From: {tenmoApiService.GetFromUserById(item.AccountFrom)}          $ {item.Amount}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{item.TransferId}          To: {tenmoApiService.GetToUserById(item.AccountTo)}          $ {item.Amount}");
+                    }
+                }
+
+                console.PromptForInteger("---------\r\nPlease enter transfer ID to view details (0 to cancel): ");
+
             }
 
             if (menuSelection == 3)

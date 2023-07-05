@@ -3,9 +3,10 @@ using TenmoServer.DAO;
 using TenmoServer.Exceptions;
 using TenmoServer.Models;
 using TenmoServer.Security;
+
 namespace TenmoServer.Controllers
 {
-    [Route("[controller]")]
+    [Route("account")]
     [ApiController]
     public class AccountController : ControllerBase
     {
