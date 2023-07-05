@@ -7,7 +7,7 @@ namespace TenmoServer.DAO
     {
         public Transfer UpdateTransfer(Transfer transfer);
         public Transfer GetTransferByTransferId(int transferId);
-        public List<Transfer> GetTransfersForUser(int userId);
+        public List<Transfer> GetTransfersForUser(int accountId);
         public Transfer CreateTransfer(Transfer transfer);
 
 
