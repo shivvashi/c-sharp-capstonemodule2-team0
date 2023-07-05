@@ -56,17 +56,17 @@ namespace TenmoClient.Services
 
         public ApiUser Login(LoginUser loginUser)
         {
-            throw new NotImplementedException();
+
             //Note from Lori: this code here should work - take a look and compare it to what we did in lecture, then uncomment if it looks good! 
 
-            //RestRequest request = new RestRequest("login");
-            //request.AddJsonBody(loginUser);
-            //IRestResponse<ApiUser> response = client.Post<ApiUser>(request);
+            RestRequest request = new RestRequest("login");
+            request.AddJsonBody(loginUser);
+            IRestResponse<ApiUser> response = client.Post<ApiUser>(request);
 
-            //CheckForError(response);
-            //user = response.Data;
-            //client.Authenticator = new JwtAuthenticator(user.Token);
-            //return response.Data;
+            CheckForError(response);
+            user = response.Data;          
+            client.Authenticator = new JwtAuthenticator(user.Token);
+            return response.Data;
         }
 
         public void Logout()

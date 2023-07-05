@@ -153,7 +153,11 @@ namespace TenmoServer.DAO
         private User MapRowToUser(SqlDataReader reader)
         {
             User user = new User();
-            //todo: (note from Lori) map the row returned by sql to the user object properties! Your code will not work without this part! 
+            //todo: (note from Lori) map the row returned by sql to the user object properties! Your code will not work without this part!
+            user.Username = Convert.ToString(reader["username"]);
+            user.UserId = Convert.ToInt32(reader["user_id"]);
+            user.PasswordHash = Convert.ToString(reader["password_hash"]);
+            user.Salt = Convert.ToString(reader["salt"]);
             return user;
         }
     }
