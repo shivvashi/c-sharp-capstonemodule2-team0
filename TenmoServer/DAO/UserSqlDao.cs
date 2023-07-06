@@ -150,6 +150,38 @@ namespace TenmoServer.DAO
             return newUser;
         }
 
+        public User GetUserByAccountId(int accountId)
+        {
+            User user = null;
+
+            string sql = "SELECT * FROM tenmo_user " +
+                "WHERE user_id = (SELECT user_id FROM account WHERE account_id = @account_id)";
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    SqlCommand cmd = new SqlCommand(sql, conn);
+                    cmd.Parameters.AddWithValue("@account_id", accountId);
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        user = MapRowToUser(reader);
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new DaoException("SQL exception occurred", ex);
+            }
+
+            return user;
+        }
+
+
         private User MapRowToUser(SqlDataReader reader)
         {
             User user = new User();

@@ -19,7 +19,7 @@ namespace TenmoServer.Controllers
         }
 
         //working
-        [HttpGet("/account/{userId}/transfers")]
+        [HttpGet("/{userId}/transfers")]
         public List<Transfer> ListTransfers(int userId)
         {
             return TransferDao.GetTransfersForUser(userId);

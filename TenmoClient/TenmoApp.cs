@@ -90,18 +90,27 @@ namespace TenmoClient
                 Console.WriteLine("-------------------------------------------\r\nTransfers\r\nID          From/To                 Amount\r\n-------------------------------------------");
                 foreach (Transfer item in transfers)
                 {
-                    if (item.TransferTypeId == 1)
+                    if (tenmoApiService.GetUsersByAccountId(item.AccountFrom)[0].UserId == tenmoApiService.UserId)
                     {
-                        Console.WriteLine($"{item.TransferId}          From:            $ {item.Amount}");
+                        Console.WriteLine($"{item.TransferId}          TO: {tenmoApiService.GetUsersByAccountId(item.AccountTo)[0].Username}          $ {item.Amount}");
                     }
                     else
                     {
-                        Console.WriteLine($"{item.TransferId}          To:          $ {item.Amount}");
+                        Console.WriteLine($"{item.TransferId}          FROM: {tenmoApiService.GetUsersByAccountId(item.AccountFrom)[0].Username}          $ {item.Amount}");
                     }
                 }
+
                 int userResponse = console.PromptForInteger("---------\r\nPlease enter transfer ID to view details (0 to cancel): ",3000, 3999);
-                Transfer transfer = tenmoApiService.GetTransferById(userResponse);
-                console.DisplaySingleTransfer(transfer);
+                if(userResponse == 0)
+                {
+                    console.PrintMainMenu(tenmoApiService.Username);
+                }
+                else
+                {
+                    Transfer transfer = tenmoApiService.GetTransferById(userResponse);
+                    console.DisplaySingleTransfer(transfer);
+                }
+                
                 
             }
 

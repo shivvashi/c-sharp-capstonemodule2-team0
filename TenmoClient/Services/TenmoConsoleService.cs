@@ -9,6 +9,7 @@ namespace TenmoClient.Services
         /************************************************************
             Print methods
         ************************************************************/
+        TenmoApiService api;
         public void PrintLoginMenu()
         {
             Console.Clear();
@@ -62,26 +63,17 @@ namespace TenmoClient.Services
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 
-        public void DisplayTransfers(List<Transfer> transfers)
-        {
-            
-            Console.WriteLine("-------------------------------------------\r\nTransfers\r\nID          From/To                 Amount\r\n-------------------------------------------");
-            foreach (Transfer item in transfers)
-            {
-                if (item.TransferTypeId == 1)
-                {
-                    Console.WriteLine($"{item.TransferId}          From: {item.AccountFrom}           $ {item.Amount}");
-                }
-                else
-                {
-                    Console.WriteLine($"{item.TransferId}          To: {item.AccountTo}          $ {item.Amount}");
-                }
-            }         
-        }
+        
 
         public void DisplaySingleTransfer(Transfer transfer)
         {
-            
+            Console.WriteLine("--------------------------------------------\r\nTransfer Details\r\n--------------------------------------------");
+            Console.WriteLine($"Id: {transfer.TransferId}");
+            Console.WriteLine($"From: {api.GetUsersByAccountId(transfer.AccountFrom)[0].Username}");
+            Console.WriteLine($"To: {api.GetUsersByAccountId(transfer.AccountTo)[0].Username}");
+            Console.WriteLine($"");
+            Console.WriteLine($"");
+           
 
         }
 
