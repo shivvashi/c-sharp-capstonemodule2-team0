@@ -15,42 +15,44 @@ namespace TenmoClient.Services
         }
 
         // Add methods to call api here...
+
+        //working -- Get Account Info, for user
         public Account GetAccount(int id)
         {
-            RestRequest request = new RestRequest($"account/{id}", DataFormat.Json);
+            RestRequest request = new RestRequest($"account/{id}");
             IRestResponse<Account> response = client.Get<Account>(request);
             CheckForError(response);
             return response.Data;
 
         }
-
+        //working -- Get all transfers for a specific user
         public List<Transfer> GetTransfers(int userId)
         {
-            RestRequest request = new RestRequest($"transfer", DataFormat.Json);
+            RestRequest request = new RestRequest($"/account/{userId}/transfers");
             IRestResponse<List<Transfer>> response = client.Get<List<Transfer>>(request);
             CheckForError(response);
             return response.Data;
         }
-
+        //working -- Get transfer by specific transfer id
         public Transfer GetTransferById(int transferId)
         {
-            RestRequest request = new RestRequest($"transfer/{transferId}");
+            RestRequest request = new RestRequest($"transfers/{transferId}");
             IRestResponse<Transfer> response = client.Get<Transfer>(request);
             CheckForError(response);
             return response.Data;
         }
 
-        public string GetFromUserById(int id)
+        public string GetFromUserByAccountId(int id)
         {
-            RestRequest request = new RestRequest($"transfer/from/{id}");
+            RestRequest request = new RestRequest($"transfers/from/{id}");
             IRestResponse<string> response = client.Get<string>(request);
             CheckForError(response);
             return response.Data;
         }
 
-        public string GetToUserById(int id)
+        public string GetToUserByAccountId(int id)
         {
-            RestRequest request = new RestRequest($"transfer/to/{id}");
+            RestRequest request = new RestRequest($"transfers/to/{id}");
             IRestResponse<string> response = client.Get<string>(request);
             CheckForError(response);
             return response.Data;
