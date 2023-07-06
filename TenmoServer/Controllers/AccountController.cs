@@ -17,7 +17,7 @@ namespace TenmoServer.Controllers
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Account> GetAccount (int id)
+        public ActionResult<Account> GetAccountByUserId (int id)
         {
             Account account = AccountDao.GetAccountBalance(id);
             if (account != null)

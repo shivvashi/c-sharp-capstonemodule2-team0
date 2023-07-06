@@ -9,7 +9,9 @@ namespace TenmoClient.Services
         /************************************************************
             Print methods
         ************************************************************/
-        TenmoApiService api;
+        
+
+        
         public void PrintLoginMenu()
         {
             Console.Clear();
@@ -63,19 +65,29 @@ namespace TenmoClient.Services
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 
+        public void DisplayUsers(IList<User> users)
+        {
+            Console.WriteLine("|-------------- Users --------------|\r\n|    Id | Username                  |\r\n|-------+---------------------------|");
+            foreach(User item in users)
+            {
+                Console.WriteLine($"|  {item.UserId} | {item.Username}                   |");
+            }
+            Console.WriteLine("|-----------------------------------|");
+        }
         
 
-        public void DisplaySingleTransfer(Transfer transfer)
-        {
-            Console.WriteLine("--------------------------------------------\r\nTransfer Details\r\n--------------------------------------------");
-            Console.WriteLine($"Id: {transfer.TransferId}");
-            Console.WriteLine($"From: {api.GetUsersByAccountId(transfer.AccountFrom)[0].Username}");
-            Console.WriteLine($"To: {api.GetUsersByAccountId(transfer.AccountTo)[0].Username}");
-            Console.WriteLine($"");
-            Console.WriteLine($"");
+        //public void DisplaySingleTransfer(Transfer transfer)
+        //{
+        //    Console.WriteLine("--------------------------------------------\r\nTransfer Details\r\n--------------------------------------------");
+        //    Console.WriteLine($"Id: {transfer.TransferId}");
+        //    Console.WriteLine($"From: {api.GetUsersByAccountId(transfer.AccountFrom)[0].Username}");
+        //    Console.WriteLine($"To: {api.GetUsersByAccountId(transfer.AccountTo)[0].Username}");
+        //    Console.WriteLine($"Type: {transfer.TransferTypeDesc}");
+        //    Console.WriteLine($"Status: {transfer.TransferStatusDesc}");
+        //    Console.WriteLine($"Amount: ${transfer.Amount}");
            
 
-        }
+        //}
 
     }
 }
