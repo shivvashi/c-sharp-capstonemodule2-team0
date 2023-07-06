@@ -99,7 +99,7 @@ namespace TenmoClient
                         Console.WriteLine($"{item.TransferId}          FROM: {tenmoApiService.GetUsersByAccountId(item.AccountFrom)[0].Username}          $ {item.Amount}");
                     }
                 }
-
+                Console.ResetColor();
                 int userResponse = console.PromptForInteger("---------\r\nPlease enter transfer ID to view details (0 to cancel): ",3000, 3999);
                 if(userResponse == 0)
                 {
@@ -108,7 +108,17 @@ namespace TenmoClient
                 else
                 {
                     Transfer transfer = tenmoApiService.GetTransferById(userResponse);
-                    console.DisplaySingleTransfer(transfer);
+                    //console.DisplaySingleTransfer(transfer);
+                    Console.WriteLine("--------------------------------------------\r\nTransfer Details\r\n--------------------------------------------");
+                    Console.WriteLine($"Id: {transfer.TransferId}");
+                    Console.WriteLine($"From: {tenmoApiService.GetUsersByAccountId(transfer.AccountFrom)[0].Username}");
+                    Console.WriteLine($"To: {tenmoApiService.GetUsersByAccountId(transfer.AccountTo)[0].Username}");
+                    Console.WriteLine($"Type: {transfer.TransferTypeDesc}");
+                    Console.WriteLine($"Status: {transfer.TransferStatusDesc}");
+                    Console.WriteLine($"Amount: ${transfer.Amount}");
+                    Console.WriteLine();
+                    console.Pause();
+                    console.PrintMainMenu(tenmoApiService.Username);
                 }
                 
                 
@@ -122,6 +132,39 @@ namespace TenmoClient
             if (menuSelection == 4)
             {
                 // Send TE bucks
+                Transfer newTransfer = new Transfer();
+                newTransfer.AccountFrom = tenmoApiService.GetAccount(tenmoApiService.UserId).AccountId;
+                newTransfer.TransferTypeId = 2;
+                newTransfer.TransferStatusId = 2;
+
+                IList<User> users = tenmoApiService.GetUsers();
+                console.DisplayUsers(users);
+
+                int min = users.Min(x => x.UserId);
+                int max = users.Max(x => x.UserId);
+                int userResponse = console.PromptForInteger("Id of the user you are sending to: ",min,max);
+                while(userResponse == tenmoApiService.UserId)
+                {
+                    console.PrintError("Can not send money to yourself. Please enter another number?");
+                    userResponse = console.PromptForInteger("Id of the user you are sending to: ");
+                }
+                
+                int accountTo = tenmoApiService.GetAccount(userResponse).AccountId;
+                newTransfer.AccountTo = accountTo;
+
+                decimal amount = console.PromptForDecimal("Enter amount to send: ");
+                while(amount >= tenmoApiService.GetAccount(tenmoApiService.UserId).Balance || amount <= .01M)
+                {
+                    console.PrintError("Can not send money to yourself. Please enter another number?");
+                    amount = console.PromptForDecimal("Enter amount to send: ");
+                }
+                newTransfer.Amount = amount;
+
+                tenmoApiService.CreateTransfer(newTransfer);
+                //Update User's Balance
+
+                //Update receivers' balance
+
             }
 
             if (menuSelection == 5)

@@ -23,8 +23,8 @@ namespace TenmoClient.Services
             IRestResponse<Account> response = client.Get<Account>(request);
             CheckForError(response);
             return response.Data;
-
         }
+
         //working -- Get all transfers for a specific user
         public List<Transfer> GetTransfers(int userId)
         {
@@ -68,7 +68,7 @@ namespace TenmoClient.Services
 
         public IList<User> GetUsersByUsername(string username)
         {
-            RestRequest request = new RestRequest($"user");
+            RestRequest request = new RestRequest($"user?username={username}");
             IRestResponse<IList<User>> response = client.Get<IList<User>>(request);
             CheckForError(response);
             return response.Data;
@@ -86,6 +86,14 @@ namespace TenmoClient.Services
         {
             RestRequest request = new RestRequest($"user");
             IRestResponse<IList<User>> response = client.Get<IList<User>>(request);
+            CheckForError(response);
+            return response.Data;
+        }
+
+        public Transfer CreateTransfer(Transfer newTransfer)
+        {
+            RestRequest request = new RestRequest("transfers");
+            IRestResponse<Transfer> response = client.Post<Transfer>(request);
             CheckForError(response);
             return response.Data;
         }
