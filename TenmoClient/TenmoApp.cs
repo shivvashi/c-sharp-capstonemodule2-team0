@@ -104,7 +104,7 @@ namespace TenmoClient
                     }
                 }
                 Console.ResetColor();
-                int userResponse = console.PromptForInteger("---------\r\nPlease enter transfer ID to view details (0 to cancel): ",3000, 3999);
+                int userResponse = console.PromptForInteger("---------\r\nPlease enter transfer ID to view details (0 to cancel): ");
                 if(userResponse == 0)
                 {
                     console.PrintMainMenu(tenmoApiService.Username);
@@ -131,6 +131,30 @@ namespace TenmoClient
             if (menuSelection == 3)
             {
                 // View your pending requests
+                IList<Transfer> transfers = tenmoApiService.GetTransfers(tenmoApiService.UserId);
+                IList<Transfer> pending = console.DisplayPendingTransfers(transfers);
+
+                int min = pending.Min(x => x.TransferId);
+                int max = pending.Max(x => x.TransferId);
+                int selectedRequest = console.PromptForInteger("---------\r\nPlease enter transfer ID to approve/reject (0 to cancel): ",min,max);
+                Transfer selectedTransfer = tenmoApiService.GetTransferById(selectedRequest);
+                console.ApproveOrReject(selectedTransfer);
+                int statusYouWant = console.PromptForInteger("Please Choose a option:");
+               
+                if (statusYouWant == 1)
+                {
+                    selectedTransfer.TransferStatusId = 2;
+                    tenmoApiService.UpdateTransfer(selectedTransfer, selectedTransfer.TransferId);
+                    //Update Balance after approval
+                }
+                else if (statusYouWant == 2)
+                {
+                    selectedTransfer.TransferStatusId = 3;
+                    tenmoApiService.UpdateTransfer(selectedTransfer, selectedTransfer.TransferId);
+                    //Update Balance after approval
+                }
+
+                console.Pause("Press any key");
             }
 
             if (menuSelection == 4)
@@ -165,6 +189,7 @@ namespace TenmoClient
                 newTransfer.Amount = amount;
 
                 tenmoApiService.CreateTransfer(newTransfer);
+
                 //Update User's Balance               
                 decimal decreaseAmount = -newTransfer.Amount;
                 Account myAccount = tenmoApiService.GetAccount(tenmoApiService.UserId);

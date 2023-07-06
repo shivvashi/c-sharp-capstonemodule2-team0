@@ -42,38 +42,6 @@ namespace TenmoServer.Controllers
             
         }
 
-        [HttpGet("/from/{id}")]
-        public ActionResult<string> GetUsernameByFromId(int id)
-        {
-            string username = TransferDao.GetFromUserById(id);
-            if(username != null)
-            {
-                return Ok(username);
-            }
-            else
-            {
-                return NotFound();
-            }
-
-           
-        }
-
-        [HttpGet("/to/{id}")]
-        public ActionResult<string> GetUsernameByToId(int id)
-        {
-            string username = TransferDao.GetToUserById(id);
-            if (username != null)
-            {
-                return Ok(username);
-            }
-            else
-            {
-                return NotFound();
-            }
-
-
-        }
-
         [HttpPost()]
         public ActionResult<Transfer> AddTransfer(Transfer transfer)
         {

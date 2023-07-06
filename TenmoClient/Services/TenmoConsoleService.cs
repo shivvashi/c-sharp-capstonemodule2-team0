@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using TenmoClient.Models;
+
 
 namespace TenmoClient.Services
 {
@@ -10,8 +12,10 @@ namespace TenmoClient.Services
             Print methods
         ************************************************************/
         
+        public TenmoApiService apiService = new TenmoApiService("https://localhost:44315/");
 
-        
+
+
         public void PrintLoginMenu()
         {
             Console.Clear();
@@ -76,18 +80,39 @@ namespace TenmoClient.Services
         }
         
 
-        //public void DisplaySingleTransfer(Transfer transfer)
-        //{
-        //    Console.WriteLine("--------------------------------------------\r\nTransfer Details\r\n--------------------------------------------");
-        //    Console.WriteLine($"Id: {transfer.TransferId}");
-        //    Console.WriteLine($"From: {api.GetUsersByAccountId(transfer.AccountFrom)[0].Username}");
-        //    Console.WriteLine($"To: {api.GetUsersByAccountId(transfer.AccountTo)[0].Username}");
-        //    Console.WriteLine($"Type: {transfer.TransferTypeDesc}");
-        //    Console.WriteLine($"Status: {transfer.TransferStatusDesc}");
-        //    Console.WriteLine($"Amount: ${transfer.Amount}");
-           
+        public IList<Transfer> DisplayPendingTransfers(IList<Transfer> pendingtransfers)
+        {
+            IList<Transfer> pendingList = new List<Transfer>();
+            Console.WriteLine("-------------------------------------------\r\nPending Transfers\r\nID                               Amount\r\n-------------------------------------------");
+            int myId = apiService.UserId;
+            foreach(Transfer item in pendingtransfers)
+            {
+                if(item.TransferStatusDesc == "Pending")
+                {
+                    if (apiService.GetUsersByAccountId(item.AccountFrom)[0].UserId == myId)
+                    {
+                        Console.WriteLine($"{item.TransferId}          To: {apiService.GetUsersByAccountId(item.AccountTo)[0].Username}                $ {item.Amount}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{item.TransferId}          From: {apiService.GetUsersByAccountId(item.AccountFrom)[0].Username}                $ {item.Amount}");
+                    }
+                    //Might need new transfer pending list
+                    pendingList.Add(item);
+                }
+                
+            }
+            return pendingList;
+        }
 
-        //}
+        public void ApproveOrReject(Transfer transfer)
+        {
+            Console.WriteLine($"\nTransfer Id: {transfer.TransferId}\nTo: {apiService.GetUsersByAccountId(transfer.AccountTo)[0].Username}     From: {apiService.GetUsersByAccountId(transfer.AccountFrom)[0].Username}\nAmount: ${transfer.Amount}");
+            Console.WriteLine($"------------------------------------------- \n");
+            Console.WriteLine("1: Approve");
+            Console.WriteLine("2: Reject");
+            Console.WriteLine("0: Don't approve or reject");           
+        }
 
     }
 }

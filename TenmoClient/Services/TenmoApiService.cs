@@ -1,5 +1,6 @@
 ﻿using RestSharp;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection.Metadata;
 using TenmoClient.Models;
 
@@ -42,21 +43,6 @@ namespace TenmoClient.Services
             return response.Data;
         }
 
-        //public string GetFromUserByAccountId(int id)
-        //{
-        //    RestRequest request = new RestRequest($"transfers/from/{id}");
-        //    IRestResponse<string> response = client.Get<string>(request);
-        //    CheckForError(response);
-        //    return response.Data;
-        //}
-
-        //public string GetToUserByAccountId(int id)
-        //{
-        //    RestRequest request = new RestRequest($"transfers/to/{id}");
-        //    IRestResponse<string> response = client.Get<string>(request);
-        //    CheckForError(response);
-        //    return response.Data;
-        //}
 
         public User GetUserByUserId(int id)
         {
@@ -104,6 +90,15 @@ namespace TenmoClient.Services
             RestRequest request = new RestRequest($"account/{accountId}");
             request.AddJsonBody(account);
             IRestResponse<Account> response = client.Put<Account>(request);
+            CheckForError(response);
+            return response.Data;
+        }
+
+        public Transfer UpdateTransfer(Transfer transfer, int transferId)
+        {
+            RestRequest request = new RestRequest($"transfers/{transferId}");
+            request.AddJsonBody(transfer);
+            IRestResponse<Transfer> response = client.Put<Transfer>(request);
             CheckForError(response);
             return response.Data;
         }
