@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.Linq;
 using System.Threading;
 using TenmoClient.Models;
@@ -90,13 +91,16 @@ namespace TenmoClient
                 Console.WriteLine("-------------------------------------------\r\nTransfers\r\nID          From/To                 Amount\r\n-------------------------------------------");
                 foreach (Transfer item in transfers)
                 {
-                    if (tenmoApiService.GetUsersByAccountId(item.AccountFrom)[0].UserId == tenmoApiService.UserId)
+                    if (item.TransferStatusId == 2)
                     {
-                        Console.WriteLine($"{item.TransferId}          TO: {tenmoApiService.GetUsersByAccountId(item.AccountTo)[0].Username}          $ {item.Amount}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{item.TransferId}          FROM: {tenmoApiService.GetUsersByAccountId(item.AccountFrom)[0].Username}          $ {item.Amount}");
+                        if (tenmoApiService.GetUsersByAccountId(item.AccountFrom)[0].UserId == tenmoApiService.UserId)
+                        {
+                            Console.WriteLine($"{item.TransferId}          TO: {tenmoApiService.GetUsersByAccountId(item.AccountTo)[0].Username}          $ {item.Amount}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"{item.TransferId}          FROM: {tenmoApiService.GetUsersByAccountId(item.AccountFrom)[0].Username}          $ {item.Amount}");
+                        }
                     }
                 }
                 Console.ResetColor();
@@ -155,16 +159,26 @@ namespace TenmoClient
                 decimal amount = console.PromptForDecimal("Enter amount to send: ");
                 while(amount >= tenmoApiService.GetAccount(tenmoApiService.UserId).Balance || amount <= .01M)
                 {
-                    console.PrintError("Can not send money to yourself. Please enter another number?");
+                    console.PrintError("Invalid money amount entered. Please try again.");
                     amount = console.PromptForDecimal("Enter amount to send: ");
                 }
                 newTransfer.Amount = amount;
 
                 tenmoApiService.CreateTransfer(newTransfer);
-                //Update User's Balance
+                //Update User's Balance               
+                decimal decreaseAmount = -newTransfer.Amount;
+                Account myAccount = tenmoApiService.GetAccount(tenmoApiService.UserId);
+                myAccount.Balance += decreaseAmount;
+                tenmoApiService.UpdateAccountBalance(myAccount, myAccount.AccountId);
 
                 //Update receivers' balance
+                decimal increaseAmount = newTransfer.Amount;
+                Account receiver = tenmoApiService.GetAccount(userResponse);
+                receiver.Balance += increaseAmount;
+                tenmoApiService.UpdateAccountBalance(receiver, receiver.AccountId);
 
+                Console.WriteLine($"You sent ${increaseAmount} to {tenmoApiService.GetUserByUserId(userResponse).Username}");
+                console.Pause("Press any key to continue: ");
             }
 
             if (menuSelection == 5)

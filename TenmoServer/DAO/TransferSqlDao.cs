@@ -123,7 +123,7 @@ namespace TenmoServer.DAO
             Transfer addedTransfer = null;
             string sql = "INSERT INTO transfer (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
                 "OUTPUT INSERTED.transfer_id " +
-                "VALUES (@transfer_type_id, @transfer_status_id, @account_from, @account_to, @amount";
+                "VALUES (@transfer_type_id, @transfer_status_id, @account_from, @account_to, @amount)";
 
             try
             {
