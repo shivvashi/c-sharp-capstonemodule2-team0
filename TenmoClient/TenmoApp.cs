@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using TenmoClient.Models;
 using TenmoClient.Services;
@@ -77,28 +78,31 @@ namespace TenmoClient
                 // View your current balance
                 decimal balance = tenmoApiService.GetAccount(tenmoApiService.UserId).Balance;
                 console.DisplayBalance(balance);
-                Thread.Sleep(5000);                               
+                Console.WriteLine();
+                console.Pause();                               
             }
 
             if (menuSelection == 2)
             {
                 // View your past transfers
                 List<Transfer> transfers = tenmoApiService.GetTransfers(tenmoApiService.UserId);
+                //console.DisplayTransfers(transfers);
                 Console.WriteLine("-------------------------------------------\r\nTransfers\r\nID          From/To                 Amount\r\n-------------------------------------------");
-                foreach(Transfer item in transfers)
+                foreach (Transfer item in transfers)
                 {
-                    if(item.TransferTypeId == 1)
+                    if (item.TransferTypeId == 1)
                     {
-                        Console.WriteLine($"{item.TransferId}          From: {tenmoApiService.GetFromUserById(item.AccountFrom)}          $ {item.Amount}");
+                        Console.WriteLine($"{item.TransferId}          From:            $ {item.Amount}");
                     }
                     else
                     {
-                        Console.WriteLine($"{item.TransferId}          To: {tenmoApiService.GetToUserById(item.AccountTo)}          $ {item.Amount}");
+                        Console.WriteLine($"{item.TransferId}          To:          $ {item.Amount}");
                     }
                 }
-
-                console.PromptForInteger("---------\r\nPlease enter transfer ID to view details (0 to cancel): ");
-
+                int userResponse = console.PromptForInteger("---------\r\nPlease enter transfer ID to view details (0 to cancel): ",3000, 3999);
+                Transfer transfer = tenmoApiService.GetTransferById(userResponse);
+                console.DisplaySingleTransfer(transfer);
+                
             }
 
             if (menuSelection == 3)

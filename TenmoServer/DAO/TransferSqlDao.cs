@@ -46,11 +46,12 @@ namespace TenmoServer.DAO
             return transfer;
         }
 
-        public List<Transfer> GetTransfersForUser(int accountId)
+        public List<Transfer> GetTransfersForUser(int userId)
         {
-            List<Transfer> transfers = null;
+            List<Transfer> transfers = new List<Transfer>();
+            //We were putting in a user Id instead of an account Id. The userId doesn't exist on this table. I replaced it with subqueries
             string sql = "SELECT * FROM transfer " +
-                "WHERE account_from = @account_from OR account_to = @account_to";
+                "WHERE account_from = (SELECT account_id FROM account WHERE user_id = @user_id) OR account_to = (SELECT account_id FROM account WHERE user_id = @user_id)";
 
             try
             {
@@ -59,13 +60,13 @@ namespace TenmoServer.DAO
                     conn.Open();
 
                     SqlCommand cmd = new SqlCommand(sql, conn);
-                    cmd.Parameters.AddWithValue("@account_from", accountId);
-                    cmd.Parameters.AddWithValue("@account_to", accountId);
+                    cmd.Parameters.AddWithValue("@user_id", userId);                    
                     SqlDataReader reader = cmd.ExecuteReader();
 
                     while (reader.Read())
                     {
-                        transfers.Add(MapRowToTransfer(reader));
+                        Transfer nextTransfer = MapRowToTransfer(reader);
+                        transfers.Add(nextTransfer);
                     }
                 }
             }
@@ -156,7 +157,7 @@ namespace TenmoServer.DAO
         {
             string user = null;
             string sql = "SELECT * FROM transfer as t " +
-                "JOIN account as ON t.account_from = a.account_id " +
+                "JOIN account as a ON t.account_from = a.account_id " +
                 "JOIN tenmo_user as tu ON a.user_id = tu.user_id " +
                 "WHERE t.account_from = @account_from";
 
@@ -188,7 +189,7 @@ namespace TenmoServer.DAO
         {
             string user = null;
             string sql = "SELECT * FROM transfer as t " +
-                "JOIN account as ON t.account_from = a.account_id " +
+                "JOIN account as a ON t.account_from = a.account_id " +
                 "JOIN tenmo_user as tu ON a.user_id = tu.user_id " +
                 "WHERE t.account_to = @account_to";
 
@@ -215,9 +216,6 @@ namespace TenmoServer.DAO
 
             return user;
         }
-
-
-
 
 
         public Transfer MapRowToTransfer(SqlDataReader reader)

@@ -1,6 +1,5 @@
 ﻿using TenmoServer.DAO;
 using Microsoft.AspNetCore.Mvc;
-using TenmoServer.DAO;
 using TenmoServer.Exceptions;
 using TenmoServer.Models;
 using TenmoServer.Security;
@@ -9,7 +8,7 @@ using System.Security.Policy;
 
 namespace TenmoServer.Controllers
 {
-    [Route("transfer")]
+    [Route("transfers")]
     [ApiController]
     public class TransferController : ControllerBase
     {
@@ -19,18 +18,20 @@ namespace TenmoServer.Controllers
             this.TransferDao = transferDao;
         }
 
-        [HttpGet()]
+        //working
+        [HttpGet("/account/{userId}/transfers")]
         public List<Transfer> ListTransfers(int userId)
         {
             return TransferDao.GetTransfersForUser(userId);
         }
 
-        [HttpGet("{id}")]
+        //working
+        [HttpGet("{transferId}")]
         public ActionResult<Transfer> GetTransfer(int transferId)
         {
             //Get a specific transfer by Id
             Transfer transfer = TransferDao.GetTransferByTransferId(transferId);
-             if(transfer != null)
+            if(transfer != null)
             {
                 return Ok(transfer);
             }
@@ -38,6 +39,7 @@ namespace TenmoServer.Controllers
             {
                 return NotFound();
             }
+            
         }
 
         [HttpGet("/from/{id}")]
@@ -75,12 +77,12 @@ namespace TenmoServer.Controllers
         [HttpPost()]
         public ActionResult<Transfer> AddTransfer(Transfer transfer)
         {
-            //Create a new Transfer between people
+            //Create a new Transfer
             Transfer added = TransferDao.CreateTransfer(transfer);
             return Created($"/transfer/{added.TransferId}", added);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{transferId}")]
         public ActionResult<Transfer> UpdateTransfer(Transfer transfer, int transferId)
         {
             //Update a transfer
