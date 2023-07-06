@@ -48,6 +48,71 @@ namespace TenmoServer.DAO
             return account;           
         }
 
+        public Account GetAccountById(int id)
+        {
+            Account account = null;
+            string sql = "SELECT * FROM account " +
+                "WHERE account_id = @account_id";
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+
+                    SqlCommand cmd = new SqlCommand(sql, conn);
+                    cmd.Parameters.AddWithValue("@account_id", id);
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        account = MapRowToAccount(reader);
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new DaoException("SQL exception occurred", ex);
+            }
+
+            return account;
+        }
+
+        public Account UpdateAccountBalance(Account account)
+        {
+            Account updateAccount = null;
+            string sql = "UPDATE account SET balance = @balance " +
+                "WHERE account_id = @account_id";
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+
+                    SqlCommand cmd = new SqlCommand(sql, conn);
+                    cmd.Parameters.AddWithValue("@balance", account.Balance);
+                    cmd.Parameters.AddWithValue("@account_id", account.AccountId);
+                    int numberOfRows = cmd.ExecuteNonQuery();
+
+                    if (numberOfRows == 0)
+                    {
+                        throw new DaoException("Zero rows affected, expected at least one");
+                    }
+
+                }
+                updateAccount = GetAccountById(account.AccountId);
+            }
+            catch (SqlException ex)
+            {
+                throw new DaoException("SQL exception occurred", ex);
+            }
+
+            return account;
+        }
+
+        
+
         public Account MapRowToAccount(SqlDataReader reader)
         {
             Account account = new Account();

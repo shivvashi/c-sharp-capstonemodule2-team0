@@ -29,6 +29,22 @@ namespace TenmoServer.Controllers
                 return NotFound();
             }
         }
+
+        [HttpPut("{accountId}")]
+        public ActionResult<Account> UpdateAccount(Account account, int accountId)
+        {
+            Account updatedAccount = AccountDao.UpdateAccountBalance(account);
+            
+
+            if(updatedAccount != null)
+            {
+                return Ok(updatedAccount);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
         
     }
 

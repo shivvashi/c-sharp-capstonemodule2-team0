@@ -93,7 +93,17 @@ namespace TenmoClient.Services
         public Transfer CreateTransfer(Transfer newTransfer)
         {
             RestRequest request = new RestRequest("transfers");
+            request.AddJsonBody(newTransfer);
             IRestResponse<Transfer> response = client.Post<Transfer>(request);
+            CheckForError(response);
+            return response.Data;
+        }
+
+        public Account UpdateAccountBalance(Account account, int accountId)
+        {
+            RestRequest request = new RestRequest($"account/{accountId}");
+            request.AddJsonBody(account);
+            IRestResponse<Account> response = client.Put<Account>(request);
             CheckForError(response);
             return response.Data;
         }
