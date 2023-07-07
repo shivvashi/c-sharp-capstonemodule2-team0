@@ -110,6 +110,19 @@ namespace TenmoClient.Services
             return listOfTransferIds;
         }
 
+        public void DisplayTransfer(Transfer transfer)
+        {
+            Console.WriteLine("--------------------------------------------\r\nTransfer Details\r\n--------------------------------------------");
+            Console.WriteLine($"Id: {transfer.TransferId}");
+            Console.WriteLine($"From: {apiService.GetUsersByAccountId(transfer.AccountFrom)[0].Username}");
+            Console.WriteLine($"To: {apiService.GetUsersByAccountId(transfer.AccountTo)[0].Username}");
+            Console.WriteLine($"Type: {transfer.TransferTypeDesc}");
+            Console.WriteLine($"Status: {transfer.TransferStatusDesc}");
+            Console.WriteLine($"Amount: ${transfer.Amount}");
+            Console.WriteLine();
+            console.Pause();
+        }
+
         
 
         
@@ -122,7 +135,7 @@ namespace TenmoClient.Services
             Console.WriteLine("2: Reject");
             Console.WriteLine("0: Don't approve or reject");
 
-            int statusYouWant = console.PromptForInteger("Please Choose a option:");
+            int statusYouWant = console.PromptForInteger("Please Choose an option");
             return statusYouWant;
         }
 
