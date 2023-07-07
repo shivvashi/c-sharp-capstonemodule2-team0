@@ -100,12 +100,13 @@ namespace TenmoServer.DAO
                     cmd.Parameters.AddWithValue("@account_from", transfer.AccountFrom);
                     cmd.Parameters.AddWithValue("@account_to", transfer.AccountTo);
                     cmd.Parameters.AddWithValue("@amount", transfer.Amount);
+                    //THIS WAS ALL SHIVAM. SAVED HOURS and HOURS of worked because dummy NATE forgot to add the transfer_id
+                    cmd.Parameters.AddWithValue("@transfer_id", transfer.TransferId);
                     int numberOfRows = cmd.ExecuteNonQuery();
                     if(numberOfRows == 0)
                     {
                         throw new DaoException("Zero rows affected, expected at least one");
-                    }
-                   
+                    }                  
                }
                 updatedTransfer = GetTransferByTransferId(transfer.TransferId);
             }

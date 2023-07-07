@@ -50,18 +50,19 @@ namespace TenmoServer.Controllers
             return Created($"/transfer/{added.TransferId}", added);
         }
 
+
+
         [HttpPut("{transferId}")]
         public ActionResult<Transfer> UpdateTransfer(Transfer transfer, int transferId)
         {
             //Update a transfer
-            transfer.TransferId = transferId;
+            Transfer updatedTransfer = TransferDao.UpdateTransfer(transfer);
 
-            try
+           if(updatedTransfer != null)
             {
-                Transfer result = TransferDao.UpdateTransfer(transfer);
-                return Ok(result);
+                return Ok(updatedTransfer);
             }
-            catch (DaoException)
+            else
             {
                 return NotFound();
             }
