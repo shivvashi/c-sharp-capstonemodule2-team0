@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TenmoServer.DAO;
 using TenmoServer.Exceptions;
 using TenmoServer.Models;
@@ -6,6 +7,7 @@ using TenmoServer.Security;
 
 namespace TenmoServer.Controllers
 {
+    
     [Route("[controller]")]
     [ApiController]
     public class LoginController : ControllerBase

@@ -5,9 +5,11 @@ using TenmoServer.Models;
 using TenmoServer.Security;
 using System.Collections.Generic;
 using System.Security.Policy;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TenmoServer.Controllers
 {
+    [Authorize]
     [Route("transfers")]
     [ApiController]
     public class TransferController : ControllerBase

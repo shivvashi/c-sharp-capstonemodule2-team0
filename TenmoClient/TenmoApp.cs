@@ -153,12 +153,14 @@ namespace TenmoClient
 
 
                 int statusYouWant = console.ApproveOrReject(selectedTransfer);
-  
-                if (statusYouWant == 1 )
+
+
+
+                while (statusYouWant == 1)
                 {
-                    if(selectedTransfer.Amount <= myAccount.Balance)
+                    if (selectedTransfer.Amount <= myAccount.Balance)
                     {
-                        if(myAccount.AccountId == selectedTransfer.AccountFrom)
+                        if (myAccount.AccountId == selectedTransfer.AccountFrom)
                         {
                             //Update transfer if approved
                             selectedTransfer.TransferStatusId = 2;
@@ -180,27 +182,33 @@ namespace TenmoClient
                         else
                         {
                             console.PrintError("Can not approve transfer to yourself");
-                            
+                            statusYouWant = console.ApproveOrReject(selectedTransfer);
+
                         }
                     }
                     else
                     {
                         console.PrintError("Balance too low to complete request. Please add more funds.");
-                        console.ApproveOrReject(selectedTransfer);
+                        statusYouWant = console.ApproveOrReject(selectedTransfer);
                     }
                 }
-                else if (statusYouWant == 2)
+                while (statusYouWant == 2)
                 {
                     //Update transfer when rejected
                     selectedTransfer.TransferStatusId = 3;
                     tenmoApiService.UpdateTransfer(selectedTransfer, selectedTransfer.TransferId);
                     console.PrintSuccess("Request was successfully rejected");
+                    console.Pause("\nPress any key to continue");
+                    return true;
 
                 }
-                
+                while (statusYouWant == 0)
+                {
+                    return true;
+                }
+
                 //Wait for user input, then return to Main Menu
                 console.Pause("Press any key to go to Main Menu:");
-                RunAuthenticated();
             }
             if (menuSelection == 4)
             {
@@ -216,10 +224,10 @@ namespace TenmoClient
                 {
                     userIds.Add(item.UserId);
                 }
+                userIds.Remove(tenmoApiService.UserId);
                 console.DisplayUsers(users);
 
-                int min = users.Min(x => x.UserId);
-                int max = users.Max(x => x.UserId);
+               
                 int userResponse = console.PromptForInteger("Id of the user you are sending to (0 to cancel)");
                 while (!userIds.Contains(userResponse))
                 {
@@ -227,17 +235,11 @@ namespace TenmoClient
                     {
                         return true;
                     }
-                    else if(userResponse == tenmoApiService.UserId)
-                    {
-                        console.PrintError("Can not send money to yourself. Please enter another number");
-                        userResponse = console.PromptForInteger("Id of the user you are sending to", min, max);
-                    }
                     else
                     {
                         console.PrintError("Not a valid userId. Please enter another number");
-                        userResponse = console.PromptForInteger("Id of the user you are sending to", min, max);
+                        userResponse = console.PromptForInteger("Id of the user you are sending to (0 to cancel)");
                     }
-
                 }
                 
                 int accountTo = tenmoApiService.GetAccount(userResponse).AccountId;
@@ -291,28 +293,21 @@ namespace TenmoClient
                 {
                     userIds.Add(item.UserId);
                 }
+                userIds.Remove(tenmoApiService.UserId);
                 console.DisplayUsers(list);
-                //Set limits for users they can select
-                int min = list.Min(x => x.UserId);
-                int max = list.Max(x => x.UserId);
-                int userResponse = console.PromptForInteger("Id of the user you are requesting from");
+                
+                int userResponse = console.PromptForInteger("Id of the user you are requesting from (press 0 to cancel)");
                 while (!userIds.Contains(userResponse))
                 {
                     if (userResponse == 0)
                     {
                         return true;
                     }
-                    else if (userResponse == tenmoApiService.UserId)
-                    {
-                        console.PrintError("Can not request money from yourself. Please enter another number");
-                        userResponse = console.PromptForInteger("Id of the user you are sending to", min, max);
-                    }
                     else
                     {
                         console.PrintError("Not a valid userId. Please enter another number");
-                        userResponse = console.PromptForInteger("Id of the user you are sending to (press 0 to cancel)", min, max);
+                        userResponse = console.PromptForInteger("Id of the user you are sending to (press 0 to cancel)");
                     }
-
                 }
 
                 //Get AccountId from user input and set to the AccountFrom 
@@ -330,7 +325,7 @@ namespace TenmoClient
                     else
                     {
                         console.PrintError("Invalid money amount entered. Can not request negative amount. Please try again.");
-                        amount = console.PromptForDecimal("Enter amount to request: ");
+                        amount = console.PromptForDecimal("Enter amount to request (press 0 to cancel)");
                     }
                 }
                 newRequest.Amount = amount;
