@@ -9,8 +9,6 @@ namespace TenmoServer.DAO
         public Transfer GetTransferByTransferId(int transferId);
         public List<Transfer> GetTransfersForUser(int accountId);
         public Transfer CreateTransfer(Transfer transfer);
-        public string GetFromUserById(int id);
-        public string GetToUserById(int id);
 
 
 
