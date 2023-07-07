@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using TenmoClient.Models;
 
 
@@ -13,6 +14,7 @@ namespace TenmoClient.Services
         ************************************************************/
         
         public TenmoApiService apiService = new TenmoApiService("https://localhost:44315/");
+        public ConsoleService console = new ConsoleService();
 
 
 
@@ -80,12 +82,13 @@ namespace TenmoClient.Services
         }
         
 
-        public IList<Transfer> DisplayPendingTransfers(IList<Transfer> pendingtransfers)
+        public IList<int> DisplayPendingTransfers(IList<Transfer> transfers)
         {
             IList<Transfer> pendingList = new List<Transfer>();
+            IList<int> listOfTransferIds = new List<int>();
             Console.WriteLine("-------------------------------------------\r\nPending Transfers\r\nID                               Amount\r\n-------------------------------------------");
             int myId = apiService.UserId;
-            foreach(Transfer item in pendingtransfers)
+            foreach(Transfer item in transfers)
             {
                 if(item.TransferStatusDesc == "Pending")
                 {
@@ -99,19 +102,28 @@ namespace TenmoClient.Services
                     }
                     //Might need new transfer pending list
                     pendingList.Add(item);
+                    listOfTransferIds.Add(item.TransferId);
                 }
                 
             }
-            return pendingList;
+
+            return listOfTransferIds;
         }
 
-        public void ApproveOrReject(Transfer transfer)
+        
+
+        
+
+        public int ApproveOrReject(Transfer transfer)
         {
             Console.WriteLine($"\nTransfer Id: {transfer.TransferId}\nTo: {apiService.GetUsersByAccountId(transfer.AccountTo)[0].Username}     From: {apiService.GetUsersByAccountId(transfer.AccountFrom)[0].Username}\nAmount: ${transfer.Amount}");
             Console.WriteLine($"------------------------------------------- \n");
             Console.WriteLine("1: Approve");
             Console.WriteLine("2: Reject");
-            Console.WriteLine("0: Don't approve or reject");           
+            Console.WriteLine("0: Don't approve or reject");
+
+            int statusYouWant = console.PromptForInteger("Please Choose a option:");
+            return statusYouWant;
         }
 
     }
