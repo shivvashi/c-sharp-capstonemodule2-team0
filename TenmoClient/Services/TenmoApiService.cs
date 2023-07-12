@@ -34,6 +34,15 @@ namespace TenmoClient.Services
             CheckForError(response);
             return response.Data;
         }
+
+        public List<Transfer> GetPendingRequests(int userId)
+        {
+            RestRequest request = new RestRequest($"/{userId}/pending/transfers");
+            IRestResponse<List<Transfer>> response = client.Get<List<Transfer>>(request);
+            CheckForError(response);
+            return response.Data;
+        }
+
         //working -- Get transfer by specific transfer id
         public Transfer GetTransferById(int transferId)
         {

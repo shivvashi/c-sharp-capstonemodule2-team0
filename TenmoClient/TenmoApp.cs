@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading;
 using TenmoClient.Models;
 using TenmoClient.Services;
@@ -46,14 +47,12 @@ namespace TenmoClient
                 {
                     return false;   // Exit the main menu loop
                 }
-
                 if (menuSelection == 1)
                 {
                     // Log in
                     Login();
                     return true;    // Keep the main menu loop going
                 }
-
                 if (menuSelection == 2)
                 {
                     // Register a new user
@@ -79,271 +78,309 @@ namespace TenmoClient
             if (menuSelection == 1)
             {
                 // View your current balance
-                decimal balance = tenmoApiService.GetAccount(tenmoApiService.UserId).Balance;
-                console.DisplayBalance(balance);
-                Console.WriteLine();
-                console.Pause();                               
+                DisplayCurrentBalance();                          
             }
 
             if (menuSelection == 2)
             {
                 // View your past transfers
-                List<Transfer> transfers = tenmoApiService.GetTransfers(tenmoApiService.UserId);
-                List<int> pastTransferIds = new List<int>();
-
-                Console.WriteLine("-------------------------------------------\r\nTransfers\r\nID          From/To                 Amount\r\n-------------------------------------------");
-                foreach (Transfer item in transfers)
-                {
-                    if (item.TransferStatusId == 2)
-                    {
-                        if (tenmoApiService.GetUsersByAccountId(item.AccountFrom)[0].UserId == tenmoApiService.UserId)
-                        {
-                            Console.WriteLine($"{item.TransferId}          TO: {tenmoApiService.GetUsersByAccountId(item.AccountTo)[0].Username}          $ {item.Amount}");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"{item.TransferId}          FROM: {tenmoApiService.GetUsersByAccountId(item.AccountFrom)[0].Username}          $ {item.Amount}");
-                        }
-                        pastTransferIds.Add(item.TransferId);
-                    }
-                }
-
-                int userResponse = console.PromptForInteger("---------\r\nPlease enter transfer ID to view details (0 to cancel)");
-                
-                while (!pastTransferIds.Contains(userResponse))
-                {
-                    if (userResponse == 0)
-                    {
-
-                        return true;
-                    }
-                    else
-                    {
-                        userResponse = console.PromptForInteger("Please enter  transfer ID to view details (0 to cancel)");
-                    }
-                }
-
-                Transfer transfer = tenmoApiService.GetTransferById(userResponse);
-                console.DisplayTransfer(transfer);
-
+                DisplayPastTransfers();
             }
 
             if (menuSelection == 3)
             {
-                Account myAccount = tenmoApiService.GetAccount(tenmoApiService.UserId);
-
-                // View your pending requests
-                IList<Transfer> transfers = tenmoApiService.GetTransfers(tenmoApiService.UserId);
-                IList<int> transferIds =  console.DisplayPendingTransfers(transfers);
-                int transferSelection = console.PromptForInteger("Please enter a transfer id to approve/reject (0 to cancel)");
-                while (!transferIds.Contains(transferSelection))
-                {
-                    if(transferSelection == 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        transferSelection = console.PromptForInteger("Please enter a transfer id to approve/reject (0 to cancel)");
-                    }
-                }
-
-                Transfer selectedTransfer = tenmoApiService.GetTransferById(transferSelection);
-
-
-
-                int statusYouWant = console.ApproveOrReject(selectedTransfer);
-
-
-
-                while (statusYouWant == 1)
-                {
-                    if (selectedTransfer.Amount <= myAccount.Balance)
-                    {
-                        if (myAccount.AccountId == selectedTransfer.AccountFrom)
-                        {
-                            //Update transfer if approved
-                            selectedTransfer.TransferStatusId = 2;
-                            tenmoApiService.UpdateTransfer(selectedTransfer, selectedTransfer.TransferId);
-
-                            //Get the Accounts to update
-                            Account to = tenmoApiService.GetAccount(tenmoApiService.GetUsersByAccountId(selectedTransfer.AccountTo)[0].UserId);
-                            Account from = tenmoApiService.GetAccount(tenmoApiService.GetUsersByAccountId(selectedTransfer.AccountFrom)[0].UserId);
-
-                            //Updating the AccountTo
-                            to.Balance += selectedTransfer.Amount;
-                            tenmoApiService.UpdateAccountBalance(to, to.AccountId);
-
-                            //Updating the AccountFrom
-                            from.Balance -= selectedTransfer.Amount;
-                            tenmoApiService.UpdateAccountBalance(from, from.AccountId);
-                            console.PrintSuccess("Request was successfully approved");
-                        }
-                        else
-                        {
-                            console.PrintError("Can not approve transfer to yourself");
-                            statusYouWant = console.ApproveOrReject(selectedTransfer);
-
-                        }
-                    }
-                    else
-                    {
-                        console.PrintError("Balance too low to complete request. Please add more funds.");
-                        statusYouWant = console.ApproveOrReject(selectedTransfer);
-                    }
-                }
-                while (statusYouWant == 2)
-                {
-                    //Update transfer when rejected
-                    selectedTransfer.TransferStatusId = 3;
-                    tenmoApiService.UpdateTransfer(selectedTransfer, selectedTransfer.TransferId);
-                    console.PrintSuccess("Request was successfully rejected");
-                    console.Pause("\nPress any key to continue");
-                    return true;
-
-                }
-                while (statusYouWant == 0)
-                {
-                    return true;
-                }
-
-                //Wait for user input, then return to Main Menu
-                console.Pause("Press any key to go to Main Menu:");
+                //View and Approve/Reject Requests
+                ViewPendingRequests();
             }
             if (menuSelection == 4)
             {
                 // Send TE bucks
-                Transfer newTransfer = new Transfer();
-                newTransfer.AccountFrom = tenmoApiService.GetAccount(tenmoApiService.UserId).AccountId;
-                newTransfer.TransferTypeId = 2;
-                newTransfer.TransferStatusId = 2;
-
-                IList<User> users = tenmoApiService.GetUsers();
-                List<int> userIds = new List<int>();
-                foreach(User item in users)
-                {
-                    userIds.Add(item.UserId);
-                }
-                userIds.Remove(tenmoApiService.UserId);
-                console.DisplayUsers(users);
-
-               
-                int userResponse = console.PromptForInteger("Id of the user you are sending to (0 to cancel)");
-                while (!userIds.Contains(userResponse))
-                {
-                    if(userResponse == 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        console.PrintError("Not a valid userId. Please enter another number");
-                        userResponse = console.PromptForInteger("Id of the user you are sending to (0 to cancel)");
-                    }
-                }
-                
-                int accountTo = tenmoApiService.GetAccount(userResponse).AccountId;
-                newTransfer.AccountTo = accountTo;
-
-                decimal amount = console.PromptForDecimal("Enter amount to send (press 0 to cancel)");
-                while(amount >= tenmoApiService.GetAccount(tenmoApiService.UserId).Balance || amount <= .01M)
-                {
-                    if(amount == 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        console.PrintError("Invalid money amount entered. Please try again.");
-                        amount = console.PromptForDecimal("Enter amount to send");
-                    }
-                   
-                }
-                newTransfer.Amount = amount;
-
-                tenmoApiService.CreateTransfer(newTransfer);
-
-                //Update User's Balance               
-                decimal decreaseAmount = -newTransfer.Amount;
-                Account myAccount = tenmoApiService.GetAccount(tenmoApiService.UserId);
-                myAccount.Balance += decreaseAmount;
-                tenmoApiService.UpdateAccountBalance(myAccount, myAccount.AccountId);
-
-                //Update receivers' balance
-                decimal increaseAmount = newTransfer.Amount;
-                Account receiver = tenmoApiService.GetAccount(userResponse);
-                receiver.Balance += increaseAmount;
-                tenmoApiService.UpdateAccountBalance(receiver, receiver.AccountId);
-
-                console.PrintSuccess($"You sent ${increaseAmount} to {tenmoApiService.GetUserByUserId(userResponse).Username}");
-                console.Pause("Press any key to continue: ");
+                SendMoney();                
             }
 
             if (menuSelection == 5)
             {
                 // Request TE bucks
-                Transfer newRequest = new Transfer();
-                newRequest.TransferTypeId = 1;
-                newRequest.TransferStatusId = 1;
-                newRequest.AccountTo = tenmoApiService.GetAccount(tenmoApiService.UserId).AccountId;
-                //Get Users and Display Them
-                IList<User> list = tenmoApiService.GetUsers();
-                List<int> userIds = new List<int>();
-                foreach (User item in list)
-                {
-                    userIds.Add(item.UserId);
-                }
-                userIds.Remove(tenmoApiService.UserId);
-                console.DisplayUsers(list);
-                
-                int userResponse = console.PromptForInteger("Id of the user you are requesting from (press 0 to cancel)");
-                while (!userIds.Contains(userResponse))
-                {
-                    if (userResponse == 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        console.PrintError("Not a valid userId. Please enter another number");
-                        userResponse = console.PromptForInteger("Id of the user you are sending to (press 0 to cancel)");
-                    }
-                }
-
-                //Get AccountId from user input and set to the AccountFrom 
-                int requestFrom = tenmoApiService.GetAccount(userResponse).AccountId;
-                newRequest.AccountFrom = requestFrom;
-
-                //Prompt for amount and set the Property
-                decimal amount = console.PromptForDecimal("Enter amount to request (press 0 to cancel)");
-                while (amount <= 0)
-                {
-                    if(amount == 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        console.PrintError("Invalid money amount entered. Can not request negative amount. Please try again.");
-                        amount = console.PromptForDecimal("Enter amount to request (press 0 to cancel)");
-                    }
-                }
-                newRequest.Amount = amount;
-                tenmoApiService.CreateTransfer(newRequest);
-                console.PrintSuccess("Your request was successfully submitted.");
-                console.Pause("Press any key to continue: ");
+                RequestMoney();
             }
 
             if (menuSelection == 6)
             {
                 // Log out
                 tenmoApiService.Logout();                
-                console.PrintSuccess("You are now logged out");
-                
+                console.PrintSuccess("You are now logged out");                
             }
 
             return true;    // Keep the main menu loop going
         }
+
+
+        private void SendMoney()
+        {
+            Transfer newTransfer = new Transfer();
+            newTransfer.AccountFrom = tenmoApiService.GetAccount(tenmoApiService.UserId).AccountId;
+            newTransfer.TransferTypeId = 2;
+            newTransfer.TransferStatusId = 2;
+
+            //Get list of users and their Ids and Display them.
+            IList<User> users = tenmoApiService.GetUsers();
+            IList<int> userIds = GetListOfUserIds(users);
+            console.DisplayUsers(users);
+
+            int userResponse = PromptForValidUserId(userIds);
+            if (userResponse == 0)
+            {
+                return;
+            }
+            int accountTo = tenmoApiService.GetAccount(userResponse).AccountId;
+            newTransfer.AccountTo = accountTo;
+
+
+            decimal amount = PromptForValidSendAmount();
+            if(amount == 0)
+            {
+                return;
+            }
+            newTransfer.Amount = amount;
+
+            tenmoApiService.CreateTransfer(newTransfer);
+
+            UpdateBalances(newTransfer,userResponse);
+
+            console.PrintSuccess($"You sent ${newTransfer.Amount.ToString("0.00")} to {tenmoApiService.GetUserByUserId(userResponse).Username}");
+            console.Pause("Press any key to continue: ");
+        }
+
+        private void RequestMoney()
+        {
+            Transfer newRequest = new Transfer();
+            newRequest.TransferTypeId = 1;
+            newRequest.TransferStatusId = 1;
+            newRequest.AccountTo = tenmoApiService.GetAccount(tenmoApiService.UserId).AccountId;
+
+            IList<User> users = tenmoApiService.GetUsers();
+            IList<int> userIds = GetListOfUserIds(users);
+            console.DisplayUsers(users);
+
+            int userResponse = PromptForValidUserId(userIds);
+            if (userResponse == 0)
+            {
+                return;
+            }
+            int accountFrom = tenmoApiService.GetAccount(userResponse).AccountId;
+            newRequest.AccountFrom = accountFrom;
+
+            decimal amount = PromptForValidRequestAmount();
+
+            newRequest.Amount = amount;
+            tenmoApiService.CreateTransfer(newRequest);
+            console.PrintSuccess("Your request was successfully submitted.");
+            console.Pause("Press any key to continue: ");
+        }
+
+        private void ViewPendingRequests()
+        {
+            Account myAccount = tenmoApiService.GetAccount(tenmoApiService.UserId);
+
+            // View your pending requests
+            IList<Transfer> transfers = tenmoApiService.GetTransfers(tenmoApiService.UserId);
+            IList<int> transferIds = console.DisplayPendingTransfers(transfers);
+
+            int transferSelection = PromptForValidTransferId(transferIds);
+            if(transferSelection == 0)
+            {
+                return;
+            }
+
+            Transfer selectedTransfer = tenmoApiService.GetTransferById(transferSelection);
+
+            int statusYouWant = console.ApproveOrReject(selectedTransfer);
+
+            UpdateTransfer(selectedTransfer,statusYouWant);
+        }
+
+
+        private IList<int> GetListOfUserIds(IList<User> list)
+        {
+            List<int> userIds = new List<int>();
+            foreach (User item in list)
+            {
+                userIds.Add(item.UserId);
+            }
+
+            return userIds;
+        }
+
+
+
+        private int PromptForValidUserId(IList<int> userIds)
+        {
+            int userResponse = console.PromptForInteger("Id of the user you are sending to (0 to cancel)");
+            while (!userIds.Contains(userResponse))
+            {
+                if (userResponse == 0)
+                {
+                    return userResponse;
+                }
+                else
+                {
+                    console.PrintError("Not a valid userId. Please enter another number");
+                    userResponse = console.PromptForInteger("Id of the user you are sending to (0 to cancel)");
+                }
+            }
+
+            return userResponse;
+        }
+
+        private int PromptForValidTransferId(IList<int> transferIds)
+        {
+            int transferSelection = console.PromptForInteger("Please enter a transfer id to approve/reject (0 to cancel)");
+            while (!transferIds.Contains(transferSelection))
+            {
+                if (transferSelection == 0)
+                {
+                    return transferSelection;
+                }
+                else
+                {
+                    transferSelection = console.PromptForInteger("Please enter a transfer id to approve/reject (0 to cancel)");
+                }
+            }
+            return transferSelection;
+        }
+
+
+
+        private decimal PromptForValidSendAmount()
+        {
+            decimal amount = console.PromptForDecimal("Enter amount to send (press 0 to cancel)");
+            while (amount >= tenmoApiService.GetAccount(tenmoApiService.UserId).Balance || amount <= .01M)
+            {
+                if (amount == 0)
+                {
+                    return amount;
+                }
+                else
+                {
+                    console.PrintError("Invalid money amount entered. Please try again.");
+                    amount = console.PromptForDecimal("Enter amount to send");
+                }
+
+            }
+            return amount;
+        }
+
+
+
+        private decimal PromptForValidRequestAmount()
+        {
+            decimal amount = console.PromptForDecimal("Enter amount to send (press 0 to cancel)");
+            while (amount <= 0)
+            {
+                if (amount == 0)
+                {
+                    return amount;
+                }
+                else
+                {
+                    console.PrintError("Invalid money amount entered. Please try again.");
+                    amount = console.PromptForDecimal("Enter amount to send");
+                }
+
+            }
+            return amount;
+        }
+
+
+        private void DisplayPastTransfers()
+        {
+            IList<Transfer> transfers = tenmoApiService.GetTransfers(tenmoApiService.UserId);
+            IList<int> pastTransferIds = console.DisplayPastTransfers(transfers);
+            int userResponse = console.SelectTransfer(pastTransferIds);
+            if (userResponse == 0)
+            {
+                return;
+            }
+            Transfer transfer = tenmoApiService.GetTransferById(userResponse);
+            console.DisplayTransfer(transfer);
+        }
+
+        private void DisplayCurrentBalance()
+        {
+            decimal balance = tenmoApiService.GetAccount(tenmoApiService.UserId).Balance;
+            console.DisplayBalance(balance);
+            Console.WriteLine();
+            console.Pause("Press any button to continue");
+        }
+
+        private void UpdateBalances(Transfer newTransfer, int userResponse)
+        {
+            //Update User's Balance               
+            decimal decreaseAmount = -newTransfer.Amount;
+            Account myAccount = tenmoApiService.GetAccount(tenmoApiService.UserId);
+            myAccount.Balance += decreaseAmount;
+            tenmoApiService.UpdateAccountBalance(myAccount, myAccount.AccountId);
+
+            //Update receivers' balance
+            decimal increaseAmount = newTransfer.Amount;
+            Account receiver = tenmoApiService.GetAccount(userResponse);
+            receiver.Balance += increaseAmount;
+            tenmoApiService.UpdateAccountBalance(receiver, receiver.AccountId);
+        }
+
+        private void UpdateTransfer(Transfer selectedTransfer, int statusYouWant)
+        {
+            Account myAccount = tenmoApiService.GetAccount(tenmoApiService.UserId);
+            //Check if they are allowed to update transfer to selected status
+            while (!isAcceptableAction(selectedTransfer,statusYouWant))
+            {
+               statusYouWant = console.ApproveOrReject(selectedTransfer);
+            }
+            if(statusYouWant == 1)
+            {
+                //They are able to approve. So update transfer.
+                selectedTransfer.TransferStatusId = 2;
+                tenmoApiService.UpdateTransfer(selectedTransfer, selectedTransfer.TransferId);
+
+                //Once approved update account balances
+                UpdateBalances(selectedTransfer, tenmoApiService.GetUsersByAccountId(selectedTransfer.AccountTo)[0].UserId);
+                console.PrintSuccess($"\nTransfer Approved. Your current balance is: ${myAccount.Balance}\n");
+                console.Pause("Press any key to continue");
+            }
+            else if(statusYouWant == 2)
+            {
+                //Update account to status rejected
+                selectedTransfer.TransferStatusId = 3;
+                tenmoApiService.UpdateTransfer(selectedTransfer, selectedTransfer.TransferId);
+                console.PrintSuccess("\nTransfer Rejected\n");
+                console.Pause("Press any key to continue");
+            }
+            else if(statusYouWant == 0)
+            {
+                //Go back to Main Menu
+                return;
+            }
+            
+        }
+
+        private bool isAcceptableAction(Transfer selectedTransfer, int statusYouWant)
+        {
+            if (selectedTransfer.AccountTo == tenmoApiService.GetAccount(tenmoApiService.UserId).AccountId && statusYouWant == 1)
+            {
+                console.PrintError("Can not approve transfer to yourself.");
+                return false;
+            }
+            else if (selectedTransfer.Amount > tenmoApiService.GetAccount(tenmoApiService.UserId).Balance && statusYouWant == 1)
+            {
+                console.PrintError("Insufficient Funds to complete transfer.");
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
 
         private void Login()
         {

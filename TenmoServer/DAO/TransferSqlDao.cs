@@ -78,6 +78,39 @@ namespace TenmoServer.DAO
             return transfers;
         }
 
+        public IList<Transfer> GetPendingRequestsForUser(int userId)
+        {
+            List<Transfer> transfers = new List<Transfer>();
+            
+            string sql = "SELECT * FROM transfer " +
+                "WHERE transfer_status_id = 1 AND (account_from = (SELECT account_id FROM account WHERE user_id = @user_id) OR account_to = (SELECT account_id FROM account WHERE user_id = @user_id))";
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+
+                    SqlCommand cmd = new SqlCommand(sql, conn);
+                    cmd.Parameters.AddWithValue("@user_id", userId);
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        Transfer nextTransfer = MapRowToTransfer(reader);
+                        transfers.Add(nextTransfer);
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new DaoException("SQL exception occurred", ex);
+            }
+
+            return transfers;
+        }
+
+
         public Transfer UpdateTransfer(Transfer transfer)
         {
             Transfer updatedTransfer = null;

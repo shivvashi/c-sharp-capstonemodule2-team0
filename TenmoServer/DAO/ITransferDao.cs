@@ -9,7 +9,7 @@ namespace TenmoServer.DAO
         public Transfer GetTransferByTransferId(int transferId);
         public List<Transfer> GetTransfersForUser(int accountId);
         public Transfer CreateTransfer(Transfer transfer);
-
+        public IList<Transfer> GetPendingRequestsForUser(int userId);
 
 
     }

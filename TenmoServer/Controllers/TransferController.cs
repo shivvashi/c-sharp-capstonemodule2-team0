@@ -27,6 +27,12 @@ namespace TenmoServer.Controllers
             return TransferDao.GetTransfersForUser(userId);
         }
 
+        [HttpGet("/{userId}/pending/transfers")]
+        public IList<Transfer> ListPendingRequests(int userId)
+        {
+            return TransferDao.GetPendingRequestsForUser(userId);
+        }
+
         //working
         [HttpGet("{transferId}")]
         public ActionResult<Transfer> GetTransfer(int transferId)
